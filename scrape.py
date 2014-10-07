@@ -1,9 +1,18 @@
 #! /usr/bin/python
+##################################################
+# TAIR SCRAPER v1.0 Author: Kvls (Alex@allexr.com)
+# scrapes:
+# 	publications (not hyperlinked)
+# 	"other names"
+# 	Annotations (relatioships ect.)
+# given a locus
+################################################
 
 from bs4 import BeautifulSoup
 import re
 import requests
 import urlparse
+import time
 import sys
 
 # todo
@@ -17,18 +26,37 @@ import sys
 # command line
 
 def main():
-	# File to output to
-	out = 'tair.txt'
-	# inp = open('atgs.txt')
-	atgs = (line.rstrip('\n') for line in open('atgs.txt'))
-	# inp.readlines()
-	# inp.close()
+	# remove "scrape.py"
+	sys.argv.pop(0)
 
+	# File to output to
+	if(len(sys.argv) == 1):
+		inputFile = sys.argv[0]
+	else:
+		inputFile = 'atgs.txt'
+
+	# specify input and output	
+	if(len(sys.argv) == 2):
+		inputFile = sys.argv[0]
+		out = sys.argv[1]
+	else:
+		out = 'tair.txt'
+		inputFile = 'atgs.txt'
+
+
+	inp = open(inputFile)
+	atgs = inp.readline().split(',')
+	# print atgs
 	i = 0
+	length = len(atgs)
 	for atg in atgs:
 		i += 1
-		print 'REQ #' + str(i)
+		print atg + ': #' + str(i) + '/' + str(length)
 		tairReq(atg, out)
+		# time delay: Let's go easy on these guys. 
+		time.sleep(2)
+
+	print 'Done' 
 
 
 
@@ -46,7 +74,6 @@ def tairReq(locus, outfile):
 	# make request to TAIR
 	req = requests.get("http://www.arabidopsis.org/servlets/Search?type=general&search_action=detail&method=1&show_obsolete=F&name=" +
 	locus + "&sub_type=gene&SEARCH_EXACT=4&SEARCH_CONTAINS=1")
-	
 	print "Tair Search request: " + locus
 
 	soup = BeautifulSoup(req.text)
@@ -59,7 +86,7 @@ def tairReq(locus, outfile):
 			targetLink.append(tag['href']) 
 	# list should be singular 
 	if(len(targetLink) != 1):
-		print "ERROR: Multiple or no links retrived"
+		print "ERROR: Multiple or no links retrived. Should be 1"
 		sys.exit(1)
 	else:
 		targetLink = targetLink[0]
@@ -67,7 +94,7 @@ def tairReq(locus, outfile):
 	# open targeted link
 	url = BASE_URL + targetLink
 	req = requests.get(url)
-	print "REQUESTING: " + locus
+	print "Tair " + locus + " page success"
 
 	soup = BeautifulSoup(req.text)
 
@@ -90,7 +117,8 @@ def tairReq(locus, outfile):
 					output.write(tag.parent.parent.findAll('td')[1].findAll('tr')[x].findAll('td')[0].text + '\n') 
 			except IndexError:
 				print (locus + "more publications than supported")
-	print "Publications parsed"
+				output.write('More than 15 publications. See webpage.')
+	print "publications parsed"
 	output.write("\n")
 
 	# annotations 
@@ -108,7 +136,7 @@ def tairReq(locus, outfile):
 
 				# print tag.parent.parent.findAll('td')[1].findAll('tr')[x].findAll('td')[0].text + '\n' 
 	print "Annotations parsed"
-	output.write('\n\n')
+	output.write("\n\n\n") 
 	output.close()
 
 main()

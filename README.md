@@ -14,3 +14,7 @@ Please don't abuse TAIR and abide by their terms of use. And really, just use th
 
 ###########USAGE############
 I use virtualenv so all dependencies are included. Just "bin/activate" and "python scrape.py" to start it. It reads line by line from the text file "atgs.txt" and writes to "Tair.txt". Obviously you can adapt this however you want.
+
+You can you with no arguments                       "python scrape.py"
+				 specifying input                   "python scrape.py input.txt"
+				 specifying input & output files    "python scrape.py input.txt output.txt"
